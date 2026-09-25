@@ -4,11 +4,13 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// Cookie security options for production
+const isProduction = process.env.NODE_ENV === "production";
+
+// Cookie security options for production & HTTPS
 export const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax", // 'none' is required over HTTPS when frontend and backend are on separate domains
   maxAge: 10 * 24 * 60 * 60 * 1000, // 10 days
 };
 
