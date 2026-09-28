@@ -1,0 +1,508 @@
+{
+  "info": {
+    "_postman_id": "jobconnect-api-v1",
+    "name": "JobConnect REST API (Production)",
+    "description": "Complete production Postman collection for JobConnect recruitment platform including Candidate, Recruiter, Admin, Jobs, and Auth workflows with auto-token management.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "jobId", "value": "", "type": "string" },
+    { "key": "applicantId", "value": "", "type": "string" },
+    { "key": "noteId", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01. Authentication & Profile",
+      "item": [
+        {
+          "name": "Register Candidate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "    pm.collectionVariables.set('userId', res.data.user._id || res.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aman Candidate\",\n  \"email\": \"aman.candidate@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"role\": \"candidate\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/signup", "host": ["{{baseUrl}}"], "path": ["api", "auth", "signup"] }
+          }
+        },
+        {
+          "name": "Register Recruiter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Priya Recruiter\",\n  \"email\": \"priya.recruiter@example.com\",\n  \"password\": \"RecruiterPass123!\",\n  \"role\": \"recruiter\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/signup", "host": ["{{baseUrl}}"], "path": ["api", "auth", "signup"] }
+          }
+        },
+        {
+          "name": "Login (Candidate / Recruiter / Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "    pm.collectionVariables.set('userId', res.data.user._id || res.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"priya.recruiter@example.com\",\n  \"password\": \"RecruiterPass123!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', res.data.accessToken);",
+                  "    pm.collectionVariables.set('refreshToken', res.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/refresh-token", "host": ["{{baseUrl}}"], "path": ["api", "auth", "refresh-token"] }
+          }
+        },
+        {
+          "name": "Get Current User Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Aman Updated\",\n  \"bio\": \"Full Stack MERN Developer with 3+ years experience.\",\n  \"skills\": [\"React\", \"Node.js\", \"MongoDB\", \"TypeScript\", \"Docker\"],\n  \"resumeUrl\": \"https://example.com/resumes/aman-cv.pdf\",\n  \"title\": \"Senior Software Engineer\",\n  \"company\": \"Tech Solutions\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/user/profile", "host": ["{{baseUrl}}"], "path": ["api", "user", "profile"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Jobs (Public & Recruiter)",
+      "item": [
+        {
+          "name": "Get All Jobs (with Search & Filters)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/job?q=Developer&location=Remote&jobType=Full-time&minSalary=50000&maxSalary=150000&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "job"],
+              "query": [
+                { "key": "q", "value": "Developer", "description": "Keyword search across title, company, description" },
+                { "key": "location", "value": "Remote" },
+                { "key": "jobType", "value": "Full-time", "description": "Full-time, Part-time, Internship, Contract, Remote" },
+                { "key": "minSalary", "value": "50000" },
+                { "key": "maxSalary", "value": "150000" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Job By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/job/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["api", "job", "{{jobId}}"] }
+          }
+        },
+        {
+          "name": "Create Job (Recruiter / Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.job && res.data.job._id) {",
+                  "    pm.collectionVariables.set('jobId', res.data.job._id);",
+                  "} else if (res.job && res.job._id) {",
+                  "    pm.collectionVariables.set('jobId', res.job._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior React / Node.js Developer\",\n  \"company\": \"Fintech Innovations\",\n  \"location\": \"Bengaluru / Remote\",\n  \"salary\": 1400000,\n  \"jobType\": \"Full-time\",\n  \"requirements\": [\"React 19\", \"Node.js\", \"MongoDB\", \"REST API\", \"System Design\"],\n  \"description\": \"We are hiring a Senior Full-Stack Engineer to architect high-performance web applications and scalable backend APIs.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/job/create", "host": ["{{baseUrl}}"], "path": ["api", "job", "create"] }
+          }
+        },
+        {
+          "name": "Update Job (Recruiter Owner / Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salary\": 1600000,\n  \"location\": \"Remote (Global)\",\n  \"status\": \"active\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/job/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["api", "job", "{{jobId}}"] }
+          }
+        },
+        {
+          "name": "Delete Job (Recruiter Owner / Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/job/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["api", "job", "{{jobId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Candidate Portal",
+      "item": [
+        {
+          "name": "Get Recommended Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/candidate/recommended-jobs", "host": ["{{baseUrl}}"], "path": ["api", "candidate", "recommended-jobs"] }
+          }
+        },
+        {
+          "name": "Apply for Job (Duplicate Protected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coverLetter\": \"Dear Hiring Team, I am thrilled to apply for this engineering position. I bring hands-on experience in MERN stack development and cloud architectures.\",\n  \"resumeUrl\": \"https://example.com/resumes/aman-candidate.pdf\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/candidate/apply/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["api", "candidate", "apply", "{{jobId}}"] }
+          }
+        },
+        {
+          "name": "Get Candidate Application Timeline",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/candidate/applications", "host": ["{{baseUrl}}"], "path": ["api", "candidate", "applications"] }
+          }
+        },
+        {
+          "name": "Get Candidate Scheduled Interviews",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/candidate/interviews", "host": ["{{baseUrl}}"], "path": ["api", "candidate", "interviews"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Recruiter Portal",
+      "item": [
+        {
+          "name": "Get Recruiter's Posted Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/recruiter/jobs", "host": ["{{baseUrl}}"], "path": ["api", "recruiter", "jobs"] }
+          }
+        },
+        {
+          "name": "Post Job (Recruiter Route)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Backend Engineer (Node/Express)\",\n  \"company\": \"Fintech Innovations\",\n  \"location\": \"Remote\",\n  \"salary\": 1200000,\n  \"description\": \"Looking for strong Node.js developers with MongoDB expertise.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/recruiter/post-job", "host": ["{{baseUrl}}"], "path": ["api", "recruiter", "post-job"] }
+          }
+        },
+        {
+          "name": "Get Applicants for Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const list = res.data || res;",
+                  "if (Array.isArray(list) && list.length > 0) {",
+                  "    pm.collectionVariables.set('applicantId', list[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/recruiter/jobs/{{jobId}}/applicants", "host": ["{{baseUrl}}"], "path": ["api", "recruiter", "jobs", "{{jobId}}", "applicants"] }
+          }
+        },
+        {
+          "name": "Get Applicant Profile Modal Details",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/recruiter/applicants/{{applicantId}}", "host": ["{{baseUrl}}"], "path": ["api", "recruiter", "applicants", "{{applicantId}}"] }
+          }
+        },
+        {
+          "name": "Update Applicant Status (Applied / Interview / Rejected / Hired)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Interview\",\n  \"note\": \"Candidate cleared initial resume screening, moving to technical round.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/recruiter/applicants/{{applicantId}}/status", "host": ["{{baseUrl}}"], "path": ["api", "recruiter", "applicants", "{{applicantId}}", "status"] }
+          }
+        },
+        {
+          "name": "Add Internal Note to Applicant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.note && res.data.note._id) {",
+                  "    pm.collectionVariables.set('noteId', res.data.note._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Excellent communication skills and strong MongoDB experience.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/recruiter/applicants/{{applicantId}}/notes", "host": ["{{baseUrl}}"], "path": ["api", "recruiter", "applicants", "{{applicantId}}", "notes"] }
+          }
+        },
+        {
+          "name": "Delete Internal Note",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/recruiter/applicants/{{applicantId}}/notes/{{noteId}}", "host": ["{{baseUrl}}"], "path": ["api", "recruiter", "applicants", "{{applicantId}}", "notes", "{{noteId}}"] }
+          }
+        },
+        {
+          "name": "Schedule Candidate Interview",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-10-05\",\n  \"time\": \"14:30\",\n  \"duration\": 45,\n  \"location\": \"Google Meet (https://meet.google.com/xyz-job-conn)\",\n  \"attendees\": [\"aman.candidate@example.com\", \"priya.recruiter@example.com\"],\n  \"createCalendar\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/recruiter/applicants/{{applicantId}}/interviews", "host": ["{{baseUrl}}"], "path": ["api", "recruiter", "applicants", "{{applicantId}}", "interviews"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Admin Portal",
+      "item": [
+        {
+          "name": "Get All Users Directory",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/users", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Promote / Demote User Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"recruiter\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/admin/promote/{{userId}}", "host": ["{{baseUrl}}"], "path": ["api", "admin", "promote", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Ban / Unban Recruiter",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/ban-recruiter/{{userId}}", "host": ["{{baseUrl}}"], "path": ["api", "admin", "ban-recruiter", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Admin Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/dashboard?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api", "admin", "dashboard"] }
+          }
+        },
+        {
+          "name": "Get Platform Statistics (Totals)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/analytics", "host": ["{{baseUrl}}"], "path": ["api", "admin", "analytics"] }
+          }
+        },
+        {
+          "name": "Get Time-Based Analytics (Aggregation)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/analytics/time", "host": ["{{baseUrl}}"], "path": ["api", "admin", "analytics", "time"] }
+          }
+        },
+        {
+          "name": "Admin Delete Any Job",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/job/{{jobId}}", "host": ["{{baseUrl}}"], "path": ["api", "admin", "job", "{{jobId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. System & Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/health", "host": ["{{baseUrl}}"], "path": ["api", "health"] }
+          }
+        },
+        {
+          "name": "API Root Welcome",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] }
+          }
+        }
+      ]
+    }
+  ]
+}
