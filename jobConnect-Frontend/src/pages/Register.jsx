@@ -7,7 +7,6 @@ import {
   Mail,
   Lock,
   Building,
-  UserCheck,
   Briefcase,
   Eye,
   EyeOff,

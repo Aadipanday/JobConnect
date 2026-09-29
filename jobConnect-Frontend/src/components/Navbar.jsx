@@ -12,7 +12,6 @@ import {
   ChevronDown,
   ShieldCheck,
   FileText,
-  Bookmark,
   LayoutDashboard,
 } from 'lucide-react';
 

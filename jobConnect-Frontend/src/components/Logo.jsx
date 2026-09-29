@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Logo = ({ size = 'default', showText = true, isDark = false, className = '' }) => {
   // Dimensions based on size prop
