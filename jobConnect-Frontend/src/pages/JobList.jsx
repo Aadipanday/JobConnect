@@ -6,7 +6,7 @@ import {
   MapPin,
   Briefcase,
   DollarSign,
-  Clock,
+  Bookmark,
   Filter,
   ArrowRight,
   RotateCcw,
@@ -26,6 +26,35 @@ const JobList = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
+  const [savedIds, setSavedIds] = useState([]);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('jobconnect_saved_jobs') || '[]');
+      setSavedIds(stored.map((j) => j._id));
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const toggleSaveJob = (e, job) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const stored = JSON.parse(localStorage.getItem('jobconnect_saved_jobs') || '[]');
+      const exists = stored.some((j) => j._id === job._id);
+      let updated;
+      if (exists) {
+        updated = stored.filter((j) => j._id !== job._id);
+      } else {
+        updated = [...stored, job];
+      }
+      localStorage.setItem('jobconnect_saved_jobs', JSON.stringify(updated));
+      setSavedIds(updated.map((j) => j._id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const jobTypes = [
     { label: 'All Types', value: '' },
@@ -261,9 +290,25 @@ const JobList = () => {
                         <div className="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-base shrink-0">
                           {job.company?.charAt(0)?.toUpperCase() || 'C'}
                         </div>
-                        <span className="inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                          {job.jobType || 'Full-time'}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                            {job.jobType || 'Full-time'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => toggleSaveJob(e, job)}
+                            title={savedIds.includes(job._id) ? 'Remove bookmark' : 'Save job'}
+                            className="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
+                          >
+                            <Bookmark
+                              className={`w-4 h-4 ${
+                                savedIds.includes(job._id)
+                                  ? 'fill-indigo-600 text-indigo-600'
+                                  : 'text-slate-400'
+                              }`}
+                            />
+                          </button>
+                        </div>
                       </div>
 
                       <div>

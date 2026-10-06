@@ -22,6 +22,7 @@ router.get("/my-jobs", protect, authorizeRoles("recruiter", "admin"), getRecruit
 router.get("/:id", getJobById);
 
 // Job creation & modification (Recruiter / Admin)
+router.post("/", protect, authorizeRoles("recruiter", "admin"), createJob);
 router.post("/create", protect, authorizeRoles("recruiter", "admin"), createJob);
 router.put("/:id", protect, authorizeRoles("recruiter", "admin"), updateJob);
 router.delete("/:id", protect, authorizeRoles("recruiter", "admin"), deleteJob);

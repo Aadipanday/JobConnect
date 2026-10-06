@@ -126,6 +126,11 @@ export const applyForJob = asyncHandler(async (req, res) => {
     throw new ApiError(400, "This job posting has been closed");
   }
 
+  // Prevent recruiter or job owner from applying
+  if (req.user.role === "recruiter" || (job.createdBy && job.createdBy.toString() === req.user._id.toString())) {
+    throw new ApiError(400, "Recruiters cannot apply for their own job posting. Please switch to a candidate account.");
+  }
+
   // Check duplicate application
   const existingApplication = await Application.findOne({
     job: jobId,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -10,8 +10,11 @@ import JobList from './pages/JobList';
 import JobDetail from './pages/JobDetail';
 import CandidateDashboard from './pages/CandidateDashboard';
 import RecruiterDashboard from './pages/RecruiterDashboard';
+import PostJob from './pages/PostJob';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
+import SavedJobs from './pages/SavedJobs';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -55,6 +58,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/candidate/saved"
+                element={
+                  <ProtectedRoute allowedRoles={['candidate']}>
+                    <SavedJobs />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Recruiter Protected Routes */}
               <Route
@@ -69,7 +80,7 @@ function App() {
                 path="/recruiter/post-job"
                 element={
                   <ProtectedRoute allowedRoles={['recruiter', 'admin']}>
-                    <RecruiterDashboard />
+                    <PostJob />
                   </ProtectedRoute>
                 }
               />
@@ -84,8 +95,8 @@ function App() {
                 }
               />
 
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/jobs" replace />} />
+              {/* 404 Fallback Route */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />

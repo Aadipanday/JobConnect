@@ -133,6 +133,7 @@ const authLimiter = rateLimit({
 // 8. Route Mounts
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/job", jobRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/recruiter", recruiterRoutes);

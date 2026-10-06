@@ -42,6 +42,7 @@ const RecruiterDashboard = () => {
   });
   const [postJobLoading, setPostJobLoading] = useState(false);
   const [postJobError, setPostJobError] = useState('');
+  const [jobStatusLoading, setJobStatusLoading] = useState(false);
 
   // Review Candidate Modal State (Mockup 2 Split Modal)
   const [selectedApplicant, setSelectedApplicant] = useState(null);
@@ -125,6 +126,32 @@ const RecruiterDashboard = () => {
       setPostJobError(err?.message || 'Failed to post job. Please try again.');
     } finally {
       setPostJobLoading(false);
+    }
+  };
+
+  const handleToggleJobStatus = async (jobToUpdate) => {
+    if (!jobToUpdate) return;
+    const newStatus = jobToUpdate.status === 'closed' ? 'active' : 'closed';
+    const confirmMsg =
+      newStatus === 'closed'
+        ? `Are you sure you want to mark "${jobToUpdate.title}" as Filled / Closed? New candidates will no longer be able to apply.`
+        : `Are you sure you want to reopen "${jobToUpdate.title}" for candidate applications?`;
+
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setJobStatusLoading(true);
+      await api.put(`/jobs/${jobToUpdate._id}`, { status: newStatus });
+      setJobs((prevJobs) =>
+        prevJobs.map((j) => (j._id === jobToUpdate._id ? { ...j, status: newStatus } : j))
+      );
+      if (selectedJob?._id === jobToUpdate._id) {
+        setSelectedJob((prev) => ({ ...prev, status: newStatus }));
+      }
+    } catch (err) {
+      alert(err?.message || 'Failed to update job status.');
+    } finally {
+      setJobStatusLoading(false);
     }
   };
 
@@ -311,9 +338,16 @@ const RecruiterDashboard = () => {
                         }`}
                       >
                         <div className="space-y-1">
-                          <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
-                            {job.title}
-                          </h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-bold text-slate-900 line-clamp-1">
+                              {job.title}
+                            </h4>
+                            {job.status === 'closed' && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 shrink-0">
+                                Filled
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-2 text-[11px] text-slate-500">
                             <span>{job.jobType || 'Full-time'}</span>
                             <span>•</span>
@@ -336,16 +370,55 @@ const RecruiterDashboard = () => {
           {/* Column 2: Applicants CRM Table */}
           <div className="lg:col-span-2 space-y-4">
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    {selectedJob ? `Applicants for "${selectedJob.title}"` : 'Candidate Applicants'}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900">
+                      {selectedJob ? `Applicants for "${selectedJob.title}"` : 'Candidate Applicants'}
+                    </h3>
+                    {selectedJob && (
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          selectedJob.status === 'closed'
+                            ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                            : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                        }`}
+                      >
+                        {selectedJob.status === 'closed' ? 'Closed / Filled' : 'Active'}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-500">
                     {applicants.length} candidate application{applicants.length === 1 ? '' : 's'}{' '}
                     received
                   </p>
                 </div>
+
+                {selectedJob && (
+                  <button
+                    onClick={() => handleToggleJobStatus(selectedJob)}
+                    disabled={jobStatusLoading}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                      selectedJob.status === 'closed'
+                        ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+                    }`}
+                  >
+                    {jobStatusLoading ? (
+                      'Updating...'
+                    ) : selectedJob.status === 'closed' ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        Reopen Job Opening
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                        Mark as Filled / Close Job
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
 
               {applicantsLoading ? (

@@ -15,6 +15,7 @@ import {
   X,
   FileText,
   Clock,
+  ArrowRight,
 } from 'lucide-react';
 
 const JobDetail = () => {
@@ -74,13 +75,25 @@ const JobDetail = () => {
     fetchJob();
   }, [id, isAuthenticated, user]);
 
+  const isJobOwner = Boolean(
+    user &&
+    job &&
+    (String(job.createdBy?._id || job.createdBy) === String(user._id || user.id))
+  );
+  const isRecruiter = user?.role === 'recruiter';
+  const isClosed = job?.status === 'closed';
+
   const handleApplyClick = () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: { pathname: `/jobs/${id}` } } });
       return;
     }
+    if (isJobOwner) {
+      navigate('/recruiter/dashboard');
+      return;
+    }
     if (user?.role !== 'candidate') {
-      alert('Only Candidate accounts can submit job applications.');
+      alert('Recruiter accounts cannot submit job applications. Please log in with a Candidate account.');
       return;
     }
     setIsModalOpen(true);
@@ -176,7 +189,29 @@ const JobDetail = () => {
 
           {/* Action Callout */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {hasApplied ? (
+            {isClosed ? (
+              <div className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-sm font-semibold">
+                <AlertCircle className="w-4 h-4 text-rose-600" />
+                Position Filled / Closed
+              </div>
+            ) : isJobOwner ? (
+              <div className="flex items-center gap-3">
+                <span className="hidden sm:inline-block px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  Your Posted Job
+                </span>
+                <button
+                  onClick={() => navigate('/recruiter/dashboard')}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 shadow-md shadow-indigo-200 active:scale-[0.98] transition"
+                >
+                  Manage Job & Applicants
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            ) : isRecruiter ? (
+              <div className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-100 text-slate-600 border border-slate-200 text-xs font-semibold">
+                Recruiter View • Only Candidates Can Apply
+              </div>
+            ) : hasApplied ? (
               <div className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm font-semibold">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 Already Applied

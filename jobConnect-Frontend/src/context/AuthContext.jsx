@@ -15,21 +15,26 @@ export const AuthProvider = ({ children }) => {
 
       if (storedToken && storedUser) {
         try {
-          setUser(JSON.parse(storedUser));
-          // Verify & re-fetch fresh user profile in background
-          const response = await api.get('/users/profile');
-          if (response?.data) {
-            setUser(response.data);
-            localStorage.setItem('user', JSON.stringify(response.data));
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+
+          // Verify & re-fetch fresh user profile in background from /auth/me
+          const response = await api.get('/auth/me');
+          const freshUser = response?.data?.user || response?.user || response?.data;
+          if (freshUser && (freshUser._id || freshUser.id)) {
+            setUser(freshUser);
+            localStorage.setItem('user', JSON.stringify(freshUser));
           }
         } catch (error) {
-          // If token verification fails, clear stale data
-          console.warn('Session verification failed:', error?.message);
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-          setUser(null);
+          console.warn('Session verification error:', error?.message);
+          // Only clear session if token is explicitly unauthorized (401)
+          if (error?.response?.status === 401) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            setUser(null);
+          }
         }
       }
       setLoading(false);

@@ -18,6 +18,7 @@ router.use(protect, authorizeRoles("recruiter", "admin"));
 
 // Jobs management
 router.get("/jobs", getRecruiterJobs);
+router.post("/jobs", createJob);
 router.post("/post-job", createJob);
 router.get("/jobs/:jobId/applicants", getJobApplicants);
 
