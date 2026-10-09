@@ -11,6 +11,7 @@ import {
   ArrowRight,
   RotateCcw,
   Building,
+  X,
 } from 'lucide-react';
 
 const JobList = () => {
@@ -64,20 +65,26 @@ const JobList = () => {
     { label: 'Internship', value: 'Internship' },
   ];
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (overrides = {}) => {
     try {
       setLoading(true);
       setError('');
 
+      const targetPage = overrides.page !== undefined ? overrides.page : page;
+      const targetQuery = overrides.search !== undefined ? overrides.search : searchQuery;
+      const targetLocation = overrides.location !== undefined ? overrides.location : locationQuery;
+      const targetJobType = overrides.jobType !== undefined ? overrides.jobType : selectedJobType;
+      const targetSort = overrides.sort !== undefined ? overrides.sort : selectedSort;
+
       const params = {
-        page,
+        page: targetPage,
         limit: 9,
-        sort: selectedSort,
+        sort: targetSort,
       };
 
-      if (searchQuery.trim()) params.q = searchQuery.trim();
-      if (locationQuery.trim()) params.location = locationQuery.trim();
-      if (selectedJobType) params.jobType = selectedJobType;
+      if (targetQuery.trim()) params.q = targetQuery.trim();
+      if (targetLocation.trim()) params.location = targetLocation.trim();
+      if (targetJobType) params.jobType = targetJobType;
 
       const response = await api.get('/jobs', { params });
       const data = response?.data || response;
@@ -108,6 +115,31 @@ const JobList = () => {
     setSelectedJobType('');
     setSelectedSort('-createdAt');
     setPage(1);
+    fetchJobs({
+      search: '',
+      location: '',
+      jobType: '',
+      sort: '-createdAt',
+      page: 1,
+    });
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setPage(1);
+    fetchJobs({ search: '', page: 1 });
+  };
+
+  const handleClearLocation = () => {
+    setLocationQuery('');
+    setPage(1);
+    fetchJobs({ location: '', page: 1 });
+  };
+
+  const handleClearJobType = () => {
+    setSelectedJobType('');
+    setPage(1);
+    fetchJobs({ jobType: '', page: 1 });
   };
 
   return (
@@ -232,12 +264,78 @@ const JobList = () => {
 
           {/* Job Listings Grid */}
           <div className="lg:col-span-3 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-sm text-slate-600 font-medium">
                 Showing <span className="font-bold text-slate-900">{totalJobs}</span> available
                 positions
               </p>
+              {(searchQuery.trim() || locationQuery.trim() || selectedJobType) && (
+                <button
+                  onClick={handleResetFilters}
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1.5 self-start sm:self-auto"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Clear All Filters
+                </button>
+              )}
             </div>
+
+            {/* Active Filter Chips Bar */}
+            {(searchQuery.trim() || locationQuery.trim() || selectedJobType) && (
+              <div className="flex flex-wrap items-center gap-2 p-3 bg-white rounded-xl border border-slate-200 shadow-sm text-xs">
+                <span className="font-semibold text-slate-500 flex items-center gap-1.5 mr-1">
+                  <Filter className="w-3.5 h-3.5 text-indigo-600" />
+                  Active Filters:
+                </span>
+
+                {searchQuery.trim() && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium border border-indigo-100">
+                    Keyword: "{searchQuery.trim()}"
+                    <button
+                      onClick={handleClearSearch}
+                      className="hover:text-indigo-900 ml-0.5"
+                      title="Clear keyword"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                )}
+
+                {locationQuery.trim() && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium border border-indigo-100">
+                    Location: "{locationQuery.trim()}"
+                    <button
+                      onClick={handleClearLocation}
+                      className="hover:text-indigo-900 ml-0.5"
+                      title="Clear location"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                )}
+
+                {selectedJobType && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-medium border border-indigo-100">
+                    Type: {selectedJobType}
+                    <button
+                      onClick={handleClearJobType}
+                      className="hover:text-indigo-900 ml-0.5"
+                      title="Clear job type"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </span>
+                )}
+
+                <button
+                  onClick={handleResetFilters}
+                  className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded text-rose-600 hover:bg-rose-50 font-semibold transition"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Reset All
+                </button>
+              </div>
+            )}
 
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
